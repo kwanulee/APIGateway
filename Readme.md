@@ -1,4 +1,4 @@
-# API Gateway를 통한 Device Shadow 액세스 하기
+# API Gateway를 통한 REST API 구축 하기
 
 ##  학습내용
 - [API Gateway](#1)
