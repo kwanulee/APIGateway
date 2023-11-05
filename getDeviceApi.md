@@ -1,4 +1,4 @@
-## 2. 디바이스 목록 조회 REST API 구축하기
+## 2. 디바이스 상태 조회 REST API 구축하기
 다음과 같은 API 요청과 API 응답을 가지는 REST API를 Lambda 함수와 API Gateway를 이용하여 구축해본다.
 
 - API 요청
