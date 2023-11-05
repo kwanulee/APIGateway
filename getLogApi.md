@@ -276,7 +276,7 @@
 	```
 	
 --
-### 단계6: CORS 활성환 및 API Gateway 콘솔에서 REST API 배포
+### 단계6: CORS 활성화 및 API Gateway 콘솔에서 REST API 배포
 
 
 JavaScript는 **Cross-Origin Resource Sharing (CORS)** 요청을 기본적으로 제한합니다. 즉, JavaScript 코드가 동일 서버 내의 리소스를 접근하는 것은 허용하지만, 다른 서버의 리소스를 사용하고자 하는 경우에는 CORS 헤더 정보가 포함되어 있어야 합니다. 
@@ -311,12 +311,10 @@ JavaScript는 **Cross-Origin Resource Sharing (CORS)** 요청을 기본적으로
 				- 가정: DynamoDB의 logging 테
 
 			```
-			https://g10uszb351.execute-api.ap-northeast-2.amazonaws.com/test/MyMKRWiFI1010/log?from=2023-10-26%2012:24:00&to=2023-10-26%2012:26:00
+			https://g10uszb351.execute-api.ap-northeast-2.amazonaws.com/test/MyMKRWiFI1010/log?from=2023-11-05%2013:26:00&to=2023-11-05%2013:27:00
 			```
 
 			4. **Send** 버튼을 클릭한다.
-			
-	![](figures/api-prod-run3.png)
 	
 
 3. 앞에서 정의한 응답모델과 동일한 형식의 JSon 문자열이 반환된 것을 확인할 수 있습니다.
