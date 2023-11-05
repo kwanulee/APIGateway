@@ -39,12 +39,12 @@
 
 	```
 	dependencies {
-        ...
-        implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
-        implementation 'com.amazonaws:aws-java-sdk-iot'
-        ...
-    }
-   	```
+		...
+       implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
+       implementation 'com.amazonaws:aws-java-sdk-iot'
+       ...
+   }
+   ```
 
 3. **src/main/java/helloworld/App.java** 파일을 다음 코드로 바꿉니다.
 	
