@@ -92,25 +92,41 @@
 	import com.amazonaws.services.iotdata.model.GetThingShadowRequest;
 	import com.amazonaws.services.lambda.runtime.Context;
 	import com.amazonaws.services.lambda.runtime.RequestHandler;
+	import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 	
-	public class GetDeviceHandler implements RequestHandler<Event, String> {
-		
-	    @Override
-	    public String handleRequest(Event event, Context context) {
-	    	AWSIotData iotData = AWSIotDataClientBuilder.standard().build();
-	        
-	        GetThingShadowRequest getThingShadowRequest  = 
-			new GetThingShadowRequest()
-				.withThingName(event.device);
-	        
-	        iotData.getThingShadow(getThingShadowRequest);
-	     
-	        return new String(iotData.getThingShadow(getThingShadowRequest).getPayload().array());
+	import java.util.HashMap;
+	import java.util.Map;
+	
+	/**
+	 * Handler for requests to Lambda function.
+	 */
+	public class App implements RequestHandler<Event, APIGatewayProxyResponseEvent> {
+	
+	    public APIGatewayProxyResponseEvent handleRequest(final Event event, final Context context) {
+	
+	        AWSIotData iotData = AWSIotDataClientBuilder.standard().build();
+	
+	        GetThingShadowRequest getThingShadowRequest =
+	                new GetThingShadowRequest()
+	                        .withThingName(event.device);
+	
+	        String output = new String(
+	                iotData.getThingShadow(getThingShadowRequest).getPayload().array());
+	
+	        Map<String, String> headers = new HashMap<>();
+	        headers.put("Content-Type", "application/json");
+	        headers.put("X-Custom-Header", "application/json");
+	
+	        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
+	                .withHeaders(headers)
+	                .withStatusCode(200)
+	                .withBody(output);
+	        return response;
 	    }
 	}
 	
 	class Event {
-		public String device;
+	    public String device;
 	}
 
 	```
