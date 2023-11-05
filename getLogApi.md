@@ -41,54 +41,79 @@
 
 	```
 	dependencies {
-        ...
-        implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
-        implementation 'com.amazonaws:aws-java-sdk-dynamodb'
-        ...
-    }
-   	```
+		...
+       implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
+       implementation 'com.amazonaws:aws-java-sdk-dynamodb'
+       ...
+   }
+   ```
 
 3. **src/main/java/helloworld/App.java** 파일을 다음 코드로 바꿉니다.
 	
 	```java
 	package helloworld;
 	
-	import java.nio.ByteBuffer;
-	import java.util.ArrayList;
+	import java.text.ParseException;
+	import java.text.SimpleDateFormat;
 	import java.util.HashMap;
+	import java.util.Iterator;
 	import java.util.Map;
+	import java.util.TimeZone;
+	
 	
 	import com.amazonaws.services.lambda.runtime.Context;
 	import com.amazonaws.services.lambda.runtime.RequestHandler;
 	import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 	
-	import com.amazonaws.services.iotdata.AWSIotData;
-	import com.amazonaws.services.iotdata.AWSIotDataClientBuilder;
-	import com.amazonaws.services.iotdata.model.UpdateThingShadowRequest;
-	import com.amazonaws.services.iotdata.model.UpdateThingShadowResult;
-	import com.fasterxml.jackson.annotation.JsonCreator;
-	
+	import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+	import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+	import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+	import com.amazonaws.services.dynamodbv2.document.Item;
+	import com.amazonaws.services.dynamodbv2.document.ItemCollection;
+	import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
+	import com.amazonaws.services.dynamodbv2.document.Table;
+	import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
+	import com.amazonaws.services.dynamodbv2.document.utils.NameMap;
+	import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 	
 	/**
 	 * Handler for requests to Lambda function.
 	 */
 	public class App implements RequestHandler<Event, APIGatewayProxyResponseEvent> {
+	    private DynamoDB dynamoDb;
+	    private String DYNAMODB_TABLE_NAME = "Logging";
 	
-	    public APIGatewayProxyResponseEvent handleRequest(final Event event, final Context context) {
-	        AWSIotData iotData = AWSIotDataClientBuilder.standard().build();
+	    public APIGatewayProxyResponseEvent handleRequest(final Event input, final Context context) {
 	
-	        String payload = getPayload(event.tags);
+	        this.initDynamoDbClient();
+	        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME);
 	
-	        UpdateThingShadowRequest updateThingShadowRequest  =
-	                new UpdateThingShadowRequest()
-	                        .withThingName(event.device)
-	                        .withPayload(ByteBuffer.wrap(payload.getBytes()));
+	        long from=0;
+	        long to=0;
+	        try {
+	            SimpleDateFormat sdf = new SimpleDateFormat ( "yyyy-MM-dd HH:mm:ss");
+	            sdf.setTimeZone(TimeZone.getTimeZone("Asia/Seoul"));
 	
-	        UpdateThingShadowResult result = iotData.updateThingShadow(updateThingShadowRequest);
-	        byte[] bytes = new byte[result.getPayload().remaining()];
-	        result.getPayload().get(bytes);
-	        String output = new String(bytes);
+	            from = sdf.parse(input.from).getTime() / 1000;
+	            to = sdf.parse(input.to).getTime() / 1000;
+	        } catch (ParseException e1) {
+	            e1.printStackTrace();
+	        }
 	
+	        QuerySpec querySpec = new QuerySpec()
+	                .withKeyConditionExpression("deviceId = :v_id and #t between :from and :to")
+	                .withNameMap(new NameMap().with("#t", "time"))
+	                .withValueMap(new ValueMap().withString(":v_id",input.device).withNumber(":from", from).withNumber(":to", to));
+	
+	        ItemCollection<QueryOutcome> items=null;
+	        try {
+	            items = table.query(querySpec);
+	        }
+	        catch (Exception e) {
+	            System.err.println("Unable to scan the table:");
+	            System.err.println(e.getMessage());
+	        }
+	        String output = getResponse(items);
 	
 	        Map<String, String> headers = new HashMap<>();
 	        headers.put("Content-Type", "application/json");
@@ -98,41 +123,35 @@
 	                .withHeaders(headers)
 	                .withStatusCode(200)
 	                .withBody(output);
-	       
+	
 	        return response;
 	    }
 	
-	    private String getPayload(ArrayList<Tag> tags) {
-	        String tagstr = "";
-	        for (int i=0; i < tags.size(); i++) {
-	            if (i !=  0) tagstr += ", ";
-	            tagstr += String.format("\"%s\" : \"%s\"", tags.get(i).tagName, tags.get(i).tagValue);
+	    private String getResponse(ItemCollection<QueryOutcome> items) {
+	
+	        Iterator<Item> iter = items.iterator();
+	        String response = "{ \"data\": [";
+	        for (int i =0; iter.hasNext(); i++) {
+	            if (i!=0)
+	                response +=",";
+	            response += iter.next().toJSON();
 	        }
-	        return String.format("{ \"state\": { \"desired\": { %s } } }", tagstr);
+	        response += "]}";
+	        return response;
 	    }
+	
+	    private void initDynamoDbClient() {
+	        AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
+	
+	        this.dynamoDb = new DynamoDB(client);
+	    }
+	
 	}
 	
 	class Event {
 	    public String device;
-	    public ArrayList<Tag> tags;
-	
-	    public Event() {
-	        tags = new ArrayList<Tag>();
-	    }
-	}
-	
-	class Tag {
-	    public String tagName;
-	    public String tagValue;
-	
-	    @JsonCreator
-	    public Tag() {
-	    }
-	
-	    public Tag(String n, String v) {
-	        tagName = n;
-	        tagValue = v;
-	    }
+	    public String from;
+	    public String to;
 	}
 	```
 	
@@ -154,7 +173,7 @@
 	- to 속성: 종료 시간  (yyyy-MM-dd hh:mm:ss) 형식의 문자열
 
 		```JSON
-		{ "device": "MyMKRWiFi1010", "from":"2023-10-20 12:24:00", "to": "2023-10-20 12:26:00"}	
+		{ "device": "MyMKRWiFi1010", "from":"2023-11-05 13:26:00", "to": "2023-11-05 13:28:00"}	
 		```
 
   
@@ -164,14 +183,12 @@
 3. **Console** 창에 다음과 같은 형식의 메시지가 마지막에 출력되는 지 확인합니다. (본인의 aws 계정에 생성된 사물의 상태가 Json 형식으로 반환됨)
    
    ```
-   ...	
-SSTART RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79 Version: $LATEST
-Picked up JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
-END RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79
-REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Duration: 12795.96 ms	Billed Duration: 12796 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
-{"statusCode": 200, 
-"headers": {"X-Custom-Header": "application/json", "Content-Type": "application/json"}, 
-"body": "{\"state\":{\"desired\":{\"temperature\":\"25.2\",\"LED\":\"OFF\"}},\"metadata\":{\"desired\":{\"temperature\":{\"timestamp\":1699075115},\"LED\":{\"timestamp\":1699075115}}},\"version\":1118,\"timestamp\":1699075115}"}
+   ...
+	Mounting /Users/kwanwoo/Dropbox/2023-2/IOTPlatform/aws-practice/LogDeviceLambda/.aws-sam/build/HelloWorldFunction as /var/task:ro,delegated, inside runtime container
+	Picked up JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+	END RequestId: 6b6e2735-2dd7-473b-91a7-a9a84d95b1de
+	REPORT RequestId: 6b6e2735-2dd7-473b-91a7-a9a84d95b1de	Init Duration: 2.56 ms	Duration: 12914.47 ms	Billed Duration: 12915 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
+	{"statusCode": 200, "headers": {"X-Custom-Header": "application/json", "Content-Type": "application/json"}, "body": "{ \"data\": [{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158409,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:49\"},{\"temperature\":\"24.30\",\"LED\":\"OFF\",\"time\":1699158414,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:54\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158419,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:59\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158424,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:04\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158434,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:14\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158444,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:24\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158454,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:34\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158464,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:44\"},{\"temperature\":\"24.30\",\"LED\":\"OFF\",\"time\":1699158469,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:49\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158474,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:54\"}]}"}
    
    ```
 --	
@@ -248,7 +265,7 @@ REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Du
 7. **쿼리 문자열**에 아래와 같은 내용을 입력합니다.
 
 	```
-	from="2023-10-20 12:24:00"&to="2023-10-20 12:26:00"
+	from="2023-11-05 13:26:00"&to="2023-11-05 13:27:00"
 	```
 
 16. **테스트**를 클릭하고, 다음과 같은 결과가 나오는 지 확인합니다.
