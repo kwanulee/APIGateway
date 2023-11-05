@@ -75,12 +75,12 @@
 
 	```
 	dependencies {
-        ...
-        implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
-        implementation 'com.amazonaws:aws-java-sdk-iot'
-        ...
-    }
-   	```
+		...
+       implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
+       implementation 'com.amazonaws:aws-java-sdk-iot'
+       ...
+   }
+   ```
 
 3. **src/main/java/helloworld/App.java** 파일을 다음 코드로 바꿉니다.
 	
@@ -241,7 +241,7 @@ REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Du
 	```
 	
 --
-### 단계6: CORS 활성환 및 API Gateway 콘솔에서 REST API 배포
+### 단계6: CORS 활성화 및 API Gateway 콘솔에서 REST API 배포
 
 
 JavaScript는 **Cross-Origin Resource Sharing (CORS)** 요청을 기본적으로 제한합니다. 즉, JavaScript 코드가 동일 서버 내의 리소스를 접근하는 것은 허용하지만, 다른 서버의 리소스를 사용하고자 하는 경우에는 CORS 헤더 정보가 포함되어 있어야 합니다. 
@@ -250,7 +250,7 @@ JavaScript는 **Cross-Origin Resource Sharing (CORS)** 요청을 기본적으로
 
 **REST API 리소스에 대해 CORS 지원 활성화**
 
-1. 리소스에서 **/devices**를 선택하고, **CORS 활성화**를 클릭합니다.
+1. 리소스에서 **/devices/{device}**를 선택하고, **CORS 활성화**를 클릭합니다.
 3. 게이트웨이 응답과 Access-Control-Allow-Methods의 모든 체크박스를 선택합니다.
 4. **저장**를 선택합니다.
 

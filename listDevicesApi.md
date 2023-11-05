@@ -31,15 +31,14 @@
 	
 2. 생성된 *ListingDeviceLambda*의 **build.gradle** 파일을 열고, 다음 의존성을 추가하고, **변경사항을 반영**합니다.
 
-
 	```
 	dependencies {
-        ...
-        implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
-        implementation 'com.amazonaws:aws-java-sdk-iot'
-        ...
-    }
-   	```
+		...
+       implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.529')
+       implementation 'com.amazonaws:aws-java-sdk-iot'
+       ...
+   }
+   ```
 
 3. **src/main/java/helloworld/App.java** 파일을 다음 코드로 바꿉니다.
 	
