@@ -53,26 +53,20 @@
 	
 	import java.nio.ByteBuffer;
 	import java.util.ArrayList;
-	import java.util.HashMap;
-	import java.util.Map;
-	
 	import com.amazonaws.services.lambda.runtime.Context;
 	import com.amazonaws.services.lambda.runtime.RequestHandler;
-	import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-	
 	import com.amazonaws.services.iotdata.AWSIotData;
 	import com.amazonaws.services.iotdata.AWSIotDataClientBuilder;
 	import com.amazonaws.services.iotdata.model.UpdateThingShadowRequest;
 	import com.amazonaws.services.iotdata.model.UpdateThingShadowResult;
 	import com.fasterxml.jackson.annotation.JsonCreator;
 	
-	
 	/**
 	 * Handler for requests to Lambda function.
 	 */
-	public class App implements RequestHandler<Event, APIGatewayProxyResponseEvent> {
+	public class App implements RequestHandler<Event, String> {
 	
-	    public APIGatewayProxyResponseEvent handleRequest(final Event event, final Context context) {
+	    public String handleRequest(final Event event, final Context context) {
 	        AWSIotData iotData = AWSIotDataClientBuilder.standard().build();
 	
 	        String payload = getPayload(event.tags);
@@ -87,17 +81,7 @@
 	        result.getPayload().get(bytes);
 	        String output = new String(bytes);
 	
-	
-	        Map<String, String> headers = new HashMap<>();
-	        headers.put("Content-Type", "application/json");
-	        headers.put("X-Custom-Header", "application/json");
-	
-	        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
-	                .withHeaders(headers)
-	                .withStatusCode(200)
-	                .withBody(output);
-	       
-	        return response;
+	        return output;
 	    }
 	
 	    private String getPayload(ArrayList<Tag> tags) {
@@ -132,6 +116,7 @@
 	        tagValue = v;
 	    }
 	}
+	
 	```
 	
 4. **src/test/java/helloworld/AppTest.java** 파일의 코드를 주석 처리한다.
@@ -177,9 +162,7 @@ SSTART RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79 Version: $LATEST
 Picked up JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
 END RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79
 REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Duration: 12795.96 ms	Billed Duration: 12796 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
-{"statusCode": 200, 
-"headers": {"X-Custom-Header": "application/json", "Content-Type": "application/json"}, 
-"body": "{\"state\":{\"desired\":{\"temperature\":\"25.2\",\"LED\":\"OFF\"}},\"metadata\":{\"desired\":{\"temperature\":{\"timestamp\":1699075115},\"LED\":{\"timestamp\":1699075115}}},\"version\":1118,\"timestamp\":1699075115}"}
+"{\"state\":{\"desired\":{\"temperature\":\"25.2\",\"LED\":\"OFF\"}},\"metadata\":{\"desired\":{\"temperature\":{\"timestamp\":1700158887},\"LED\":{\"timestamp\":1700158887}}},\"version\":1147,\"timestamp\":1700158887}"
    
    ```
 --	
@@ -311,7 +294,7 @@ REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Du
 상태
 200
 응답 본문
-{"statusCode":200,"headers":{"X-Custom-Header":"application/json","Content-Type":"application/json"},"body":"{\"state\":{\"desired\":{\"temperature\":\"25.2\",\"LED\":\"ON\"}},\"metadata\":{\"desired\":{\"temperature\":{\"timestamp\":1699077493},\"LED\":{\"timestamp\":1699077493}}},\"version\":1120,\"timestamp\":1699077493}"}
+"{\"state\":{\"desired\":{\"temperature\":\"25.2\",\"LED\":\"ON\"}},\"metadata\":{\"desired\":{\"temperature\":{\"timestamp\":1699077493},\"LED\":{\"timestamp\":1699077493}}},\"version\":1120,\"timestamp\":1699077493}"
 	...
 	```
 	

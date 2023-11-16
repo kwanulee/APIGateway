@@ -92,17 +92,13 @@
 	import com.amazonaws.services.iotdata.model.GetThingShadowRequest;
 	import com.amazonaws.services.lambda.runtime.Context;
 	import com.amazonaws.services.lambda.runtime.RequestHandler;
-	import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-	
-	import java.util.HashMap;
-	import java.util.Map;
 	
 	/**
 	 * Handler for requests to Lambda function.
 	 */
-	public class App implements RequestHandler<Event, APIGatewayProxyResponseEvent> {
+	public class App implements RequestHandler<Event, String> {
 	
-	    public APIGatewayProxyResponseEvent handleRequest(final Event event, final Context context) {
+	    public String handleRequest(final Event event, final Context context) {
 	
 	        AWSIotData iotData = AWSIotDataClientBuilder.standard().build();
 	
@@ -113,15 +109,7 @@
 	        String output = new String(
 	                iotData.getThingShadow(getThingShadowRequest).getPayload().array());
 	
-	        Map<String, String> headers = new HashMap<>();
-	        headers.put("Content-Type", "application/json");
-	        headers.put("X-Custom-Header", "application/json");
-	
-	        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
-	                .withHeaders(headers)
-	                .withStatusCode(200)
-	                .withBody(output);
-	        return response;
+	        return output;
 	    }
 	}
 	
@@ -163,7 +151,7 @@ SSTART RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79 Version: $LATEST
 Picked up JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
 END RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79
 REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Duration: 12795.96 ms	Billed Duration: 12796 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
-{"statusCode": 200, "headers": {"X-Custom-Header": "application/json", "Content-Type": "application/json"}, "body": "{\"state\":{\"desired\":{\"welcome\":\"aws-iot\"},\"reported\":{\"temperature\":\"22.30\",\"LED\":\"OFF\",\"welcome\":\"aws-iot\"}},\"metadata\":{\"desired\":{\"welcome\":{\"timestamp\":1697592894}},\"reported\":{\"temperature\":{\"timestamp\":1697772333},\"LED\":{\"timestamp\":1697772333},\"welcome\":{\"timestamp\":1697592894}}},\"version\":1117,\"timestamp\":1699062480}"}
+"{\"state\":{\"desired\":{\"welcome\":\"aws-iot\"},\"reported\":{\"temperature\":\"22.30\",\"LED\":\"OFF\",\"welcome\":\"aws-iot\"}},\"metadata\":{\"desired\":{\"welcome\":{\"timestamp\":1697592894}},\"reported\":{\"temperature\":{\"timestamp\":1697772333},\"LED\":{\"timestamp\":1697772333},\"welcome\":{\"timestamp\":1697592894}}},\"version\":1117,\"timestamp\":1699062480}"
    
    ```
 --	
@@ -234,10 +222,11 @@ REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Du
 16. **테스트**를 클릭하고, 다음과 같은 결과가 나오는 지 확인합니다.
 	
 	```
-	{"statusCode":200,
-	 "headers":{"X-Custom-Header":"application/json","Content-Type":"application/json"},
-	 "body":"{\"state\":{\"desired\":{\"welcome\":\"aws-iot\"},\"reported\":{\"temperature\":\"22.30\",\"LED\":\"OFF\",\"welcome\":\"aws-iot\"}},\"metadata\":{\"desired\":{\"welcome\":{\"timestamp\":1697592894}},\"reported\":{\"temperature\":{\"timestamp\":1697772333},\"LED\":{\"timestamp\":1697772333},\"welcome\":{\"timestamp\":1697592894}}},\"version\":1117,\"timestamp\":1699064142}"}
-	...
+/devices/{device} - GET 메서드 테스트 결과
+...
+응답 본문
+"{\"state\":{\"desired\":{\"welcome\":\"aws-iot\",\"temperature\":\"25.1\",\"LED\":\"OFF\"},\"reported\":{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"welcome\":\"aws-iot\"},\"delta\":{\"temperature\":\"25.1\"}},\"metadata\":{\"desired\":{\"welcome\":{\"timestamp\":1697592894},\"temperature\":{\"timestamp\":1699157194},\"LED\":{\"timestamp\":1699157194}},\"reported\":{\"temperature\":{\"timestamp\":1699158494},\"LED\":{\"timestamp\":1699158494},\"welcome\":{\"timestamp\":1697592894}}},\"version\":1145,\"timestamp\":1700158284}"
+...
 	```
 	
 --
@@ -333,7 +322,7 @@ JavaScript는 **Cross-Origin Resource Sharing (CORS)** 요청을 기본적으로
 		        contentType: "application/json",
 		
 		        success: function (data, status, xhr) {
-		                var result = JSON.parse(data.body);
+		                var result = JSON.parse(data);
 		                printData(result);  // 성공시, 데이터 출력을 위한 함수 호출
 		               
 		                console.log("data="+data);
