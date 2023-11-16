@@ -287,12 +287,7 @@ REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Du
 	
 	```
 /devices/{device} - PUT 메서드 테스트 결과
-요청
-/devices/MyMKRWiFi1010
-지연 시간
-5661
-상태
-200
+...
 응답 본문
 "{\"state\":{\"desired\":{\"temperature\":\"25.2\",\"LED\":\"ON\"}},\"metadata\":{\"desired\":{\"temperature\":{\"timestamp\":1699077493},\"LED\":{\"timestamp\":1699077493}}},\"version\":1120,\"timestamp\":1699077493}"
 	...

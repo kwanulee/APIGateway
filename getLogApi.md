@@ -55,15 +55,12 @@
 	
 	import java.text.ParseException;
 	import java.text.SimpleDateFormat;
-	import java.util.HashMap;
 	import java.util.Iterator;
-	import java.util.Map;
 	import java.util.TimeZone;
 	
 	
 	import com.amazonaws.services.lambda.runtime.Context;
 	import com.amazonaws.services.lambda.runtime.RequestHandler;
-	import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 	
 	import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 	import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
@@ -79,11 +76,11 @@
 	/**
 	 * Handler for requests to Lambda function.
 	 */
-	public class App implements RequestHandler<Event, APIGatewayProxyResponseEvent> {
+	public class App implements RequestHandler<Event, String> {
 	    private DynamoDB dynamoDb;
 	    private String DYNAMODB_TABLE_NAME = "Logging";
 	
-	    public APIGatewayProxyResponseEvent handleRequest(final Event input, final Context context) {
+	    public String handleRequest(final Event input, final Context context) {
 	
 	        this.initDynamoDbClient();
 	        Table table = dynamoDb.getTable(DYNAMODB_TABLE_NAME);
@@ -115,16 +112,7 @@
 	        }
 	        String output = getResponse(items);
 	
-	        Map<String, String> headers = new HashMap<>();
-	        headers.put("Content-Type", "application/json");
-	        headers.put("X-Custom-Header", "application/json");
-	
-	        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
-	                .withHeaders(headers)
-	                .withStatusCode(200)
-	                .withBody(output);
-	
-	        return response;
+	        return output;
 	    }
 	
 	    private String getResponse(ItemCollection<QueryOutcome> items) {
@@ -188,7 +176,7 @@
 	Picked up JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
 	END RequestId: 6b6e2735-2dd7-473b-91a7-a9a84d95b1de
 	REPORT RequestId: 6b6e2735-2dd7-473b-91a7-a9a84d95b1de	Init Duration: 2.56 ms	Duration: 12914.47 ms	Billed Duration: 12915 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
-	{"statusCode": 200, "headers": {"X-Custom-Header": "application/json", "Content-Type": "application/json"}, "body": "{ \"data\": [{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158409,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:49\"},{\"temperature\":\"24.30\",\"LED\":\"OFF\",\"time\":1699158414,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:54\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158419,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:59\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158424,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:04\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158434,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:14\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158444,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:24\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158454,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:34\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158464,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:44\"},{\"temperature\":\"24.30\",\"LED\":\"OFF\",\"time\":1699158469,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:49\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158474,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:54\"}]}"}
+	"{ \"data\": [{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158409,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:49\"},{\"temperature\":\"24.30\",\"LED\":\"OFF\",\"time\":1699158414,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:54\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158419,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:59\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158424,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:04\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158434,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:14\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158444,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:24\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158454,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:34\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158464,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:44\"},{\"temperature\":\"24.30\",\"LED\":\"OFF\",\"time\":1699158469,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:49\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158474,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:54\"}]}"
    
    ```
 --	
@@ -272,7 +260,11 @@
 16. **테스트**를 클릭하고, 다음과 같은 결과가 나오는 지 확인합니다.
 	
 	```
-	업데이트
+	/devices/{device}/log - GET 메서드 테스트 결과
+요청
+...
+응답 본문
+"{ \"data\": [{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158409,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:49\"},{\"temperature\":\"24.30\",\"LED\":\"OFF\",\"time\":1699158414,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:54\"},{\"temperature\":\"24.50\",\"LED\":\"OFF\",\"time\":1699158419,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:26:59\"},{\"temperature\":\"24.40\",\"LED\":\"OFF\",\"time\":1699158424,\"deviceId\":\"MyMKRWiFi1010\",\"timestamp\":\"2023-11-05 13:27:04\"},
 	...
 	```
 	
@@ -312,7 +304,7 @@ JavaScript는 **Cross-Origin Resource Sharing (CORS)** 요청을 기본적으로
 				- 가정: DynamoDB의 logging 테
 
 			```
-			https://g10uszb351.execute-api.ap-northeast-2.amazonaws.com/test/MyMKRWiFI1010/log?from=2023-11-05%2013:26:00&to=2023-11-05%2013:27:00
+			https://cry59jagkd.execute-api.ap-northeast-2.amazonaws.com/prod/devices/MyMKRWiFi1010/log?from=2023-11-05%2013:26:00&to=2023-11-05%2013:27:00
 			```
 
 			4. **Send** 버튼을 클릭한다.
