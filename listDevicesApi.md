@@ -52,14 +52,11 @@
 	import com.amazonaws.services.iot.model.ThingAttribute;
 	import com.amazonaws.services.lambda.runtime.Context;
 	import com.amazonaws.services.lambda.runtime.RequestHandler;
-	import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-	import java.util.Map;
-	import java.util.HashMap;
 	
-	public class App implements RequestHandler<Object, APIGatewayProxyResponseEvent> {
+	public class App implements RequestHandler<Object, String> {
 	
 	    @Override
-	    public APIGatewayProxyResponseEvent handleRequest(Object input, Context context) {
+	    public String handleRequest(Object input, Context context) {
 	
 	        // AWSIot 객체를 얻는다.
 	        AWSIot iot = AWSIotClientBuilder.standard().build();
@@ -70,17 +67,9 @@
 	        // listThings 메소드 호출하여 결과 얻음.
 	        ListThingsResult result = iot.listThings(listThingsRequest);
 	
-	
-	        Map<String, String> headers = new HashMap<>();
-	        headers.put("Content-Type", "application/json");
-	        headers.put("X-Custom-Header", "application/json");
-	
-	        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
-	                .withHeaders(headers);
-	
-	        // result 객체로부터 API 응답모델 문자열 생성하여 반
-	        return response.withStatusCode(200).withBody(getResultStr(result));
+	        return getResultStr(result);
 	    }
+	
 	
 	    /**
 	     * ListThingsResult 객체인 result로 부터 ThingName과 ThingArn을 얻어서 Json문자 형식의
@@ -317,7 +306,7 @@ JavaScript는 **Cross-Origin Resource Sharing (CORS)** 요청을 기본적으로
 		        
 		        success: function (data, status, xhr) {
 		
-		            var result = JSON.parse(data.body);
+		            var result = JSON.parse(data);
 		            setDataList(result.things);  // 성공시, 데이터 출력을 위한 함수 호출
 		            console.log(data);
 		        },
