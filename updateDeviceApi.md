@@ -207,6 +207,7 @@ REPORT RequestId: e49a9f7e-bf5d-415a-b72d-9e5754830e79	Init Duration: 0.82 ms	Du
 1. [API Gateway 콘솔](https://ap-northeast-2.console.aws.amazon.com/apigateway/)로 이동합니다.
 2.이전에 생성한 *my-device-api*를 선택합니다.
 3. 리소스 이름(**/{device}**)을 선택합니다. 
+	- **/{device}**는 **경로 매개변수(Path Parameter)**를 나타내며, 이는 특정 디바이스의 고유 식별자(Unique Identifier)를 의미합니다. 여기서 **/{device}**는 실제 요청 시 서버가 처리할 특정 디바이스를 지정하는 데 사용되는 변수입니다.
 4. **메서드** 섹션에서 **메소드 생성**을 클릭합니다.
 5. **메서드 유형** 드롭다운 메뉴에서 **PUT**을 선택합니다.
 6. **통합 유형**에서 *Lambda 함수*를 선택합니다.
