@@ -4,7 +4,7 @@
 - API 요청
 	
 	```		
-	PUT /devices/{deviceID}
+	PUT /devices/{device}
 	```	
 	- payload 
 	
