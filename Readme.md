@@ -65,7 +65,7 @@ Lambda 콘솔에서 [함수 페이지](https://console.aws.amazon.com/lambda/hom
 	```javascript
 	export const handler = async (event) => {
 	    let name = event.queryStringParameters.from;
-	    let greeing = `Hello ${name}, from Lambda.`;
+	    let greeting = `Hello ${name}, from Lambda.`;
 	    const response = {
 	        statusCode: 200,
 	        body: JSON.stringify(greeting)
