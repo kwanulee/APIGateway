@@ -4,7 +4,7 @@
 - API 요청
 	
 	```	
-	GET /devices/{deviceId}
+	GET /devices/{device}
 	```
 	
 - 응답 모델

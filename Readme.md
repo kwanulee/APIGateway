@@ -241,7 +241,7 @@ https://console.aws.amazon.com/apigateway 에서 API Gateway 콘솔에 로그인
 - 요청
 
 	```
-	GET /devices/{deviceId}
+	GET /devices/{device}
 	```
 
 - 응답 모델
@@ -303,7 +303,7 @@ https://console.aws.amazon.com/apigateway 에서 API Gateway 콘솔에 로그인
 - 요청
 
 	```		
-	PUT /devices/{deviceID}
+	PUT /devices/{device}
 	```
 	- body
 
